@@ -1,1 +1,13 @@
+# macos folder system
 .DS_Store
+
+# reference is previous draft of the project in jupyter notebook, ommited from final version
+train/training.py
+train/dedbug.ipynb
+
+# draft of preprocessing unit
+src/preprocessing/missing.py
+
+# Files formed dduring training
+__pycache__
+catboost_info
