@@ -38,7 +38,7 @@ class CustomPreprocessor:
             # Real missing data is imputed with median values.
             ('num_na', SimpleImputer(strategy='median'), num_cols)
             ])
-
+        self.columns = false_missing_cat + other_cat + num_cols
         # std_scale:
         self.scaler = StandardScaler()
         

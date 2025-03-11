@@ -1,2 +1,2 @@
-import gradient_boosting
-import neural_network
+from .gradient_boosting import CustomCatBoostRegressor
+from .neural_network import NeuralNetwork

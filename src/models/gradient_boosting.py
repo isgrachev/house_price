@@ -17,24 +17,22 @@ class CustomCatBoostRegressor(CatBoostRegressor):
                  random_seed, iterations: int = 500, learning_rate: float = 0.1, depth: int = 3, 
                  loss_function = 'RMSE', verbose: bool = True, early_stopping_rounds: int = 20):
         
-        super.__init__(random_seed, iterations, learning_rate, depth, loss_function, verbose, early_stopping_rounds)
+        super().__init__(random_seed=random_seed, iterations=iterations, learning_rate=learning_rate, 
+                         depth=depth, loss_function=loss_function, verbose=verbose, early_stopping_rounds=early_stopping_rounds)
 
-    def gb_pooling(self, false_missing_cat: list, other_cat: list, X, y = None, X_val = None, y_val = None):
+    def gb_pooling(self, cat_cols: int, X, y = None, X_val = None, y_val = None):
         """
         Create data pools for a subsample. 
         Creates pools for: training - if X and y are specified, validation - if X_val and y_val are specified and test 
         """
 
-        transformed_cat = false_missing_cat + other_cat  # order of categorical columns after dataset transformation with pipeline:
-        if y:
-            self.main_pool = Pool(X, y,
-                                  cat_features=list(range(len(transformed_cat))))
-        elif X:
-            self.test_pool = Pool(X, 
-                                  cat_features=list(range(len(transformed_cat))))
-        if X_val and y_val:
-            self.val_pool = Pool(X_val, (y_val),
-                                 cat_features=list(range(len(transformed_cat))))
+        # transformed_cat = false_missing_cat + other_cat  # order of categorical columns after dataset transformation with pipeline:
+        self.main_pool = Pool(X, y, cat_features=list(range(cat_cols)))
+        try:
+            self.val_pool = Pool(X_val, y_val, cat_features=list(range(cat_cols)))
+        except:
+            pass
+            
 
     def plot_feature_importance(self, names, top=10, figsize=(10, 10), title='Most important features'):
         """

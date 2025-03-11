@@ -1,1 +1,1 @@
-import custom_preprocessor
+from .custom_preprocessor import CustomPreprocessor

@@ -5,7 +5,7 @@ from torch.utils.data import TensorDataset
 import numpy as np
 
 
-def to_tensor(self, arr: np.ndarray):
+def to_tensor(arr: np.ndarray):
         """
         Convert np.array to a tensor.
 
@@ -39,6 +39,7 @@ class NeuralNetwork(nn.Module):
     """
     def __init__(self, features_in: int, features_out: int = 1, max_epochs: int = 500, device: str = 'cpu'):
         # model initiation
+        super().__init__()
         self.model = nn.Sequential(OrderedDict([
             ('fc1', nn.Linear(features_in, 2)),
             ('act1', nn.ReLU()),
@@ -47,7 +48,8 @@ class NeuralNetwork(nn.Module):
             ('outp', nn.Linear(2, features_out))
         ]))
         self.criterion = nn.MSELoss()
-        self.optimizer = torch.optim.Adam(self.model.parameters, lr=0.01)
+        self.optimizer = torch.optim.Adam(self.model.parameters(), lr=0.01)
+        self.max_epochs = max_epochs
         self.device = {'cpu': 'cpu',
                        'cuda': 'cuda' if torch.cuda.is_available() else 'cpu'}
 
@@ -68,10 +70,18 @@ class NeuralNetwork(nn.Module):
             Tensor of validation features
         """
 
-        dataset = TensorDataset(X, np.log(y))
-        if X_val and y_val:
-            val_dataset = TensorDataset(X_val, np.log(y_val))
-        self.rmse = {"train": [], "valid": []}
+        X = to_tensor(X)
+        y = to_tensor(y)
+        dataset = TensorDataset(X, y)
+        val=False
+        try:
+            X_val = to_tensor(X_val)
+            y_val = to_tensor(y_val)
+            val_dataset = TensorDataset(X_val, y_val)
+            val=True
+        except:
+            pass
+        self.rmse = {"train": [], "validation": []}
         for epoch in range(self.max_epochs):
             self.model.train()
             self.optimizer.zero_grad()
@@ -82,12 +92,15 @@ class NeuralNetwork(nn.Module):
             self.rmse['train'].append(np.sqrt(loss.item()))
 
             # calculate loss on validation dataset
-            if X_val and y_val:
+            if val:
                 self.model.eval()
                 with torch.no_grad():
                     val_pred = self.model(val_dataset.tensors[0])
                     val_loss = np.sqrt(self.criterion(val_pred, val_dataset.tensors[1]).item())
                     self.rmse['validation'].append(val_loss)
+            
+            if epoch % 10 == 0:
+                print(f"\nIteration: {epoch}    |   Train RMSE: {self.rmse['train'][epoch]}    |    Validation RMSE: {self.rmse['validation'][epoch]}")
 
     def predict(self, X):
         """
